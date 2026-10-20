@@ -1,0 +1,116 @@
+diff --git a/core/examples/grlog_dump.rs b/core/examples/grlog_dump.rs
+new file mode 100644
+index 0000000..61dfe4c
+--- /dev/null
++++ b/core/examples/grlog_dump.rs
+@@ -0,0 +1,20 @@
++//! dump the GR-Log decoder (code -> look-linear) and Standard's matrix: grlog_dump IMAGE OUT.json [--hc]
++use grlook::grlog::{self, Encoding};
++fn main() {
++    let a: Vec<String> = std::env::args().collect();
++    let hc = a.iter().any(|x| x == "--hc");
++    let img = std::fs::read(&a[1]).unwrap();
++    let cam = grlog::camera(&img, hc).unwrap();
++    let enc = enc_from_env(&cam); let dec = grlog::decoder(&cam, enc);
++    let n = 4096;
++    let t: Vec<f64> = (0..n).map(|k| dec(k as f64 / (n - 1) as f64)).collect();
++    let j = serde_json::json!({ "decode": t, "standard": cam.standard, "top_ev": Encoding::top_ev(&cam), "lo": enc.lo, "span": enc.span });
++    std::fs::write(&a[2], j.to_string()).unwrap();
++}
++
++fn enc_from_env(cam: &grlook::lutfit::Camera) -> Encoding {
++    match std::env::var("GRLOG_LO") {
++        Ok(lo) => { let lo: f64 = lo.parse().unwrap(); Encoding::new(lo, Encoding::top_ev(cam) - lo).unwrap() }
++        Err(_) => Encoding::DEFAULT,
++    }
++}
+diff --git a/core/examples/grlog_iiix.rs b/core/examples/grlog_iiix.rs
+new file mode 100644
+index 0000000..de8ec86
+--- /dev/null
++++ b/core/examples/grlog_iiix.rs
+@@ -0,0 +1,34 @@
++//! GR-Log on a chosen look for the GR IIIx 1.60: writes the decoded image with GR-Log
++//! and the post LUTs. Usage: grlog_iiix UPDATE OUTDIR TARGET [--hc]
++use std::path::PathBuf;
++use grlook::grfw::Container;
++use grlook::grlog::{self, Encoding, To};
++use grlook::session::Session;
++use serde_json::json;
++fn main() {
++    let a: Vec<String> = std::env::args().collect();
++    let hc = a.iter().any(|x| x == "--hc");
++    let s = Session::open(std::fs::read(&a[1]).unwrap(), "fwdc243b.bin").unwrap();
++    let out = PathBuf::from(&a[2]); let target = a[3].as_str();
++    std::fs::create_dir_all(&out).unwrap();
++    let cam = grlog::camera(s.image(), hc).unwrap();
++    let enc = enc_from_env(&cam);
++    let spec = grlog::spec(&cam, target, enc).unwrap();
++    let (_r, packed, _p) = s.export(&json!({ "targets": { target: spec } })).unwrap();
++    let img = Container::parse(packed).unwrap().decode().unwrap();
++    std::fs::write(out.join("image-grlog.bin"), &img).unwrap();
++    let tag = if hc { "-HC" } else { "" };
++    for (to, name) in [(To::Standard, "Standard"), (To::Rec709, "Rec709")] {
++        let cube = grlog::post_lut(&cam, enc, &to, 33, &format!("GR-Log{tag} to {name}")).unwrap();
++        std::fs::write(out.join(format!("GR-Log{tag}_to_{name}.cube")), cube).unwrap();
++    }
++    let first = (16.0 / (0.18 * cam.scale)).log2();
++    println!("hc {hc} log range EV {first:.2} .. {:.2} grey code {}", Encoding::top_ev(&cam), (255.0 * enc.encode(0.18)).round());
++}
++
++fn enc_from_env(cam: &grlook::lutfit::Camera) -> Encoding {
++    match std::env::var("GRLOG_LO") {
++        Ok(lo) => { let lo: f64 = lo.parse().unwrap(); Encoding::new(lo, Encoding::top_ev(cam) - lo).unwrap() }
++        Err(_) => Encoding::DEFAULT,
++    }
++}
+diff --git a/core/examples/grlog_luts_img.rs b/core/examples/grlog_luts_img.rs
+new file mode 100644
+index 0000000..c2ca455
+--- /dev/null
++++ b/core/examples/grlog_luts_img.rs
+@@ -0,0 +1,26 @@
++//! post LUTs computed from a decoded image (no Session): grlog_luts_img IMAGE OUTDIR [--hc]
++use grlook::grlog::{self, Encoding, To};
++fn main() {
++    let a: Vec<String> = std::env::args().collect();
++    let hc = a.iter().any(|x| x == "--hc");
++    let img = std::fs::read(&a[1]).unwrap();
++    let out = std::path::PathBuf::from(&a[2]); std::fs::create_dir_all(&out).unwrap();
++    let cam = grlog::camera(&img, hc).unwrap();
++    let enc = enc_from_env(&cam);
++    let c = grlog::curve(&cam, enc);
++    std::fs::write(out.join("curve.u16"), c.iter().flat_map(|v| v.to_le_bytes()).collect::<Vec<u8>>()).unwrap();
++    let tag = if hc { "-HC" } else { "" };
++    for (to, name) in [(To::Standard, "Standard"), (To::Rec709, "Rec709")] {
++        for size in [33usize, 65] {
++            let cube = grlog::post_lut(&cam, enc, &to, size, &format!("GR-Log{tag} to {name}")).unwrap();
++            std::fs::write(out.join(format!("GR-Log{tag}_to_{name}_{size}.cube")), cube).unwrap();
++        }
++    }
++}
++
++fn enc_from_env(cam: &grlook::lutfit::Camera) -> Encoding {
++    match std::env::var("GRLOG_LO") {
++        Ok(lo) => { let lo: f64 = lo.parse().unwrap(); Encoding::new(lo, Encoding::top_ev(cam) - lo).unwrap() }
++        Err(_) => Encoding::DEFAULT,
++    }
++}
+diff --git a/core/examples/iiix_image.rs b/core/examples/iiix_image.rs
+new file mode 100644
+index 0000000..bcd34ef
+--- /dev/null
++++ b/core/examples/iiix_image.rs
+@@ -0,0 +1,12 @@
++//! Decode a GR IIIx update file to its image, optionally with judgem00's tested video bundle
++//! (manual mlive7 dials osd bitrate). Usage: iiix_image FWDC243B.BIN OUT_IMAGE [--video]
++use grlook::grfw::Container;
++fn main() {
++    let a: Vec<String> = std::env::args().collect();
++    let mut img = Container::parse(std::fs::read(&a[1]).unwrap()).unwrap().decode().unwrap();
++    if a.iter().any(|x| x == "--video") {
++        let names = grlook::video::names_from(Some(&serde_json::Value::Bool(true))).unwrap();
++        for line in grlook::video::apply(&mut img, &names).unwrap() { println!("{line}"); }
++    }
++    std::fs::write(&a[2], &img).unwrap();
++}

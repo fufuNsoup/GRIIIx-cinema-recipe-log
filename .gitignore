@@ -1,0 +1,12 @@
+# Ricoh firmware, anything derived from it, and generated LUTs never go in this repository
+*.bin
+*.BIN
+*.img
+*.npy
+*.cube
+out/
+third_party/
+work/
+__pycache__/
+*.pyc
+.DS_Store

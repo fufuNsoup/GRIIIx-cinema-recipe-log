@@ -1,0 +1,101 @@
+diff --git a/gr3patch.py b/gr3patch.py
+index 251c88a..09db05f 100644
+--- a/gr3patch.py
++++ b/gr3patch.py
+@@ -6,13 +6,13 @@ from gr4_editor.codec.frames import decode_payload, section_rows, framed_contain
+ from gr4_editor.firmware import _repack_frames
+ 
+ BASE, DSRC, DDST, DLEN = 0x53000000, 0x5407B540, 0x55000000, 0x3A080
+-EXPECT_SHA = 'd6a3c9c288d784080e7b283222ecdd8752adfeed6faa36dab44f73115354bfd4'
++EXPECT_SHA = '708e79f3b7b96a7e1581b4acf4c412233050a1832718ef7f06c8397db1b431c7'  # GR IIIx 1.60 (fwdc243b.bin); ported from GR III 2.10
+ 
+ class Image:
+     def __init__(self, path):
+         self.candidate = open(path, 'rb').read()
+         if hashlib.sha256(self.candidate).hexdigest() != EXPECT_SHA:
+-            raise SystemExit('unexpected input firmware (addresses are for GR III 2.10 fwdc239b.bin only)')
++            raise SystemExit('unexpected input firmware (IIIx port: GR IIIx 1.60 fwdc243b.bin only)')
+         info = inspect_container(self.candidate)
+         self.original, _ = decode_payload(self.candidate[128:info['payload_end']], info['decoded_size'])
+         rows = {r['name']: r for r in section_rows(self.original)}
+diff --git a/make_icons.py b/make_icons.py
+index 484144d..0078b58 100644
+--- a/make_icons.py
++++ b/make_icons.py
+@@ -15,7 +15,7 @@ from gr4_editor.codec.frames import section_rows
+ CATALOG = 0x550020FC
+ ICON_ID = dict(vivid=0x224, retro=0x164, hdr=0x15F, cross=0x32, bleach=0x15A)
+ FRAME_ID = 0xE8
+-FONT = '/System/Library/Fonts/Supplemental/DIN Condensed Bold.ttf'
++FONT = __import__('os').environ.get('GR3X_FONT', '/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Bold.ttf')  # IIIx port: DIN Condensed Bold not available
+ BG = (53, 53, 54)
+ LABELS = dict(                        # mode -> (text, colour)
+     cross=('P400', (255, 214, 64)),   # Kodak Portra 400
+diff --git a/make_slots.py b/make_slots.py
+index 0057a83..9fa7bba 100644
+--- a/make_slots.py
++++ b/make_slots.py
+@@ -32,7 +32,7 @@ from make_film import q13_matrix, SHARED_REC, REC_LEN
+ from film_cave import csp_src, getter_src, knots_of, expand, csp_entry, N_KNOTS, KNOT_BYTES, CURVE_LIB, STEP
+ from armasm import assemble
+ 
+-STOCK = '../fwdc239b.bin'
++STOCK = __import__('os').environ.get('GR3X_STOCK', '../fwdc243b.bin')  # IIIx port: GR IIIx 1.60
+ FIRST_TONE = 25
+ PROXY = 11                                  # Standard: adjustments shared with the films (v13c; v13/v13b used 17 = Positive Film)
+ LEGACY_SLOTS = (1, 2, 3, 4, 5, 7, 9)        # unreachable records with their own (single-referenced) look matrix
+diff --git a/make_slots14.py b/make_slots14.py
+index d377821..b3b3f79 100644
+--- a/make_slots14.py
++++ b/make_slots14.py
+@@ -46,7 +46,7 @@ from make_film import q13_matrix, SHARED_REC, REC_LEN
+ from film_cave import csp_src, getter_src, knots_of, expand, csp_entry, N_KNOTS, KNOT_BYTES, CURVE_LIB, STEP
+ from armasm import assemble
+ 
+-STOCK = '../fwdc239b.bin'
++STOCK = __import__('os').environ.get('GR3X_STOCK', '../fwdc243b.bin')  # IIIx port: GR IIIx 1.60
+ FIRST_TONE = 25
+ PROXY = 11                                  # Standard: adjustments shared with the films (v13c; v13/v13b used 17 = Positive Film)
+ LEGACY_SLOTS = (1, 2, 3, 4, 5, 7, 9, 8, 6)  # unreachable records; own single-referenced look matrix except NEW_MAT
+diff --git a/make_slots15.py b/make_slots15.py
+index e6ae1ab..81be2f3 100644
+--- a/make_slots15.py
++++ b/make_slots15.py
+@@ -55,7 +55,7 @@ from make_film import q13_matrix, SHARED_REC, REC_LEN
+ from film_cave import csp_src, getter_src, knots_of, expand, csp_entry, N_KNOTS, KNOT_BYTES, CURVE_LIB, STEP
+ from armasm import assemble
+ 
+-STOCK = '../fwdc239b.bin'
++STOCK = __import__('os').environ.get('GR3X_STOCK', '../fwdc243b.bin')  # IIIx port: GR IIIx 1.60
+ FIRST_TONE = 25
+ PROXY = 11                                  # Standard: adjustments shared with the films (v13c; v13/v13b used 17 = Positive Film)
+ LEGACY_SLOTS = (1, 2, 3, 4, 5, 7, 9, 8, 6)  # unreachable records; own single-referenced look matrix except NEW_MAT
+@@ -65,11 +65,13 @@ SID0 = 0x380                                # string ids of the film names
+ # icon ids taken over for the films: HDF on/off (0x05-0x07, HDF models only), GR IIIx certification marks (0x1D,
+ # 720x360; the GR III shows 0x1E) and GR IIIx TELE / 71mm crop (0x2D, 0x2E). 0x05-0x07 are 40x40 and are redrawn in
+ # place; 0x1D/0x2D/0x2E get 40x40 descriptors inside 0x1D's pixel area. Only for a GR III without HDF.
+-ICON_IDS = (0x05, 0x06, 0x07, 0x1D, 0x2D, 0x2E, 0x2A0, 0x2A1, 0x2A2)
++# IIIx port: only new ids (descriptor table) and pixels from the GR III certification page 0x1E, which a GR IIIx
++# never shows; no HDF (0x05-0x07) or GR IIIx (0x1D/0x2D/0x2E) resource is touched.
++ICON_IDS = (0x2A0, 0x2A1, 0x2A2)
+ NEW_ICON0, ICON_BOUND = 0x2A0, 0x29E          # ids >= NEW_ICON0 served from a descriptor table
+ ICON_G1_FAIL, ICON_G2_FAIL = 0x53209FC4, 0x53209FF8   # id getters (width / height): out-of-range path 'mov r0,#0'
+ ICON_DRAW_BOUND, ICON_DRAW_AT, ICON_DRAW_RET = 0x5320A7CC, 0x5320A80C, 0x5320A814   # draw fn 0x5320A7AC
+-CARVE_FROM = 0x1D
++CARVE_FROM = 0x1E   # IIIx port (GR III: 0x1D)
+ FRAME_ICON = 0xE8                           # Positive Film icon: film-strip frame for the labels
+ ICON_LABELS = dict(                         # key -> (label, colour), as make_icons LABELS_V10/V12
+     portra=('P400', (255, 214, 64)), ektar=('E100', (255, 120, 80)), gold=('G200', (255, 170, 30)),
+diff --git a/verify_slots16.py b/verify_slots16.py
+index 66d8149..364c3b5 100644
+--- a/verify_slots16.py
++++ b/verify_slots16.py
+@@ -78,7 +78,7 @@ def desc(r, i):
+     d = romw(r, CAT + 4 * i) - 0x53000000
+     return struct.unpack('<HHI', r[d:d + 8])
+ ib = rows['ICONBIN']['start'] + 16
+-allowed = [(ib + 4 * desc(S, i)[2], ib + 4 * desc(S, i)[2] + 4 * desc(S, i)[0] * desc(S, i)[1]) for i in M.ICON_IDS[:3] + (M.CARVE_FROM,)]
++allowed = [(ib + 4 * desc(S, i)[2], ib + 4 * desc(S, i)[2] + 4 * desc(S, i)[0] * desc(S, i)[1]) for i in tuple(i for i in M.ICON_IDS[:3] if i < M.NEW_ICON0) + (M.CARVE_FROM,)]
+ diff = np.flatnonzero(np.frombuffer(s_dec[ib:rows['ICONBIN']['end']], 'u1') != np.frombuffer(p_dec[ib:rows['ICONBIN']['end']], 'u1')) + ib
+ inside = all(any(lo <= x < hi for lo, hi in allowed) for x in diff[::97].tolist() + diff[-1:].tolist())
+ others = all(desc(S, i) == desc(P, i) for i in range(0x29F) if i not in M.ICON_IDS[:len(films)])
