@@ -32,8 +32,8 @@ Most of the work here builds directly on other people's projects; see [Credits](
 * **Cross Process** renders without its signature curves, because the Cinema data uses that storage.
 * **ND filter** does not engage in video M. It works in video P/Av/Tv and in stills.
 * **No shutter/aperture readout** while recording in video M. The values still apply.
-* Recording above stock 60p's peak rate has worked in testing so far, but long clips, heat and slow cards still need
-  more testing. The remaining-time display uses the old bitrate.
+* Video at the higher bitrate has been field-tested with clips of up to about 1 minute (no crashes or dropped
+  recordings). Long clips (10+ min), heat and slow cards are untested. The remaining-time display uses the old bitrate.
 * Highlight correction has no effect in video M. GR-Log assumes it is off.
 
 ## Camera test status
@@ -44,10 +44,10 @@ Most of the work here builds directly on other people's projects; see [Credits](
 | 2 | Cinema (Yellow/Green) | ✅ renders correctly |
 | 4 | + Clarity/Shading gate, Negative Film grain | ✅ |
 | 5 | + Cinema grain | ✅ (also on an Urban Edition and a Diary Edition) |
-| 8 | + Cinema Color Tone on Toning | ✅ Yellow: --/blue/red step from light to strong |
+| 8 | + Cinema Color Tone on Toning | ✅ Yellow: --/blue/red step from light to strong; Green −4…+4 in testing |
 | 9 | + GR-Log on Vivid | ✅ GR-Log + LUT looks right; much cleaner shadows than Standard |
 | 10a | + bitrate 52.5 Mbit/s | ✅ clips record and play back (short clips tested) |
-| **11** | **+ GR-Log v2 curve** | ✅ **current build** · GR-Log + film LUT confirmed |
+| **11** | **+ GR-Log v2 curve** | ✅ **current build** · GR-Log + film LUT confirmed · field use: both Cinema looks in sun, backlight, shade and overcast; video clips up to ~1 min, no crashes |
 
 Stages 6 (an ND attempt that didn't work) and 7 (superseded by 8) are left out. See [docs/TESTING.md](docs/TESTING.md)
 for the measurements.

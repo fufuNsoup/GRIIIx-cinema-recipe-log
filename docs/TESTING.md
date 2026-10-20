@@ -38,6 +38,16 @@ instead of 239). That gives about 28.5 codes per stop instead of 26. Middle grey
 chains agree within 0.15 % (Rec.709) on a grey ramp from −4.5 to +3.3 EV. On camera, GR-Log v2 with a film LUT
 (Kodak 50D) gave the expected result.
 
+## Field use (stage 11, October 2026)
+
+* Cinema (Yellow) in golden hour, harsh backlight, open shade, overcast and very saturated subjects: warm, muted
+  midtones, highlights roll off softly, whites stay ivory in shade, and strong colours stay clean and separate
+  (hue sectors working). Grain visible as expected.
+* Cinema (Green) in overcast light: the GR IV split tone (green-teal shadows, slight lavender in light tones,
+  neutral top end), low contrast. The −4…+4 Toning steps are still being checked.
+* Video: several clips of up to about 1 minute at the stage-11 bitrate. No crashes or stopped recordings.
+* Still to test: skin tones; clips of 10+ minutes (heat, the 4 GB file limit).
+
 ## Bitrate
 
 | Build | 24p | 30p | 60p |
@@ -47,8 +57,8 @@ chains agree within 0.15 % (Rec.709) on a grey ramp from −4.5 to +3.3 EV. On c
 | **10a / 11** | **42 (63)** | **52.5 (79)** | **52.5 (79)** |
 | 10b (not included, untested) | 52.4 (79) | 65.5 (98) | 65.5 (98) |
 
-Mbit/s average (peak). 65.5 is the most the two 16-bit constants can hold. Short 10a clips record and play back
-cleanly. Still to test: long clips (the 4 GB file limit, heat) and slower cards.
+Mbit/s average (peak). 65.5 is the most the two 16-bit constants can hold. Clips of up to about 1 minute record and play
+back cleanly. Still to test: long clips (the 4 GB file limit, heat) and slower cards.
 
 ## Offline checks (every build)
 
