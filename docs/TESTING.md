@@ -43,10 +43,14 @@ chains agree within 0.15 % (Rec.709) on a grey ramp from −4.5 to +3.3 EV. On c
 * Cinema (Yellow) in golden hour, harsh backlight, open shade, overcast and very saturated subjects: warm, muted
   midtones, highlights roll off softly, whites stay ivory in shade, and strong colours stay clean and separate
   (hue sectors working). Grain visible as expected.
-* Cinema (Green) in overcast light: the GR IV split tone (green-teal shadows, slight lavender in light tones,
-  neutral top end), low contrast. The −4…+4 Toning steps are still being checked.
+* Cinema (Green) in overcast light, hard sun and golden hour: the GR IV split tone (green-teal shadows, slight
+  lavender/pink in light tones such as white paint and concrete, neutral top end), slate-teal skies, olive greens,
+  heavier shadows than Yellow. Strong colours (a red bike) stay clean. The −4…+4 Toning steps are not yet confirmed.
+* Portraits in hard sun, both looks: skin renders natural and rich with smooth highlight roll-off and detail in
+  the shadow side. Yellow: warmer, red-orange skin against a navy sky. Green: cooler, more neutral skin against a
+  teal sky.
 * Video: several clips of up to about 1 minute at the stage-11 bitrate. No crashes or stopped recordings.
-* Still to test: skin tones; clips of 10+ minutes (heat, the 4 GB file limit).
+* Still to test: the Cinema (Green) Toning steps; clips of 10+ minutes (heat, the 4 GB file limit); a GR IIIx HDF.
 
 ## Bitrate
 

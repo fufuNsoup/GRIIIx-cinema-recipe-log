@@ -14,6 +14,12 @@ step against a known SHA-256.
 
 Most of the work here builds directly on other people's projects; see [Credits](#credits).
 
+![Cinema (Yellow) vs Cinema (Green), same scene, exposure matched](docs/images/garage-yellow-vs-green.jpg)
+*Cinema (Yellow), left, vs Cinema (Green), right: same scene and light, Yellow darkened 0.75 EV to match. Shot on a GR IIIx with this build.*
+
+![Cinema (Yellow) vs Cinema (Green), open field](docs/images/field-yellow-vs-green.jpg)
+*Open field: Cinema (Yellow), left, vs Cinema (Green), right (different days and light).*
+
 ## What you get (stage 11)
 
 | Feature | Details |
@@ -44,13 +50,23 @@ Most of the work here builds directly on other people's projects; see [Credits](
 | 2 | Cinema (Yellow/Green) | ✅ renders correctly |
 | 4 | + Clarity/Shading gate, Negative Film grain | ✅ |
 | 5 | + Cinema grain | ✅ (also on an Urban Edition and a Diary Edition) |
-| 8 | + Cinema Color Tone on Toning | ✅ Yellow: --/blue/red step from light to strong; Green −4…+4 in testing |
+| 8 | + Cinema Color Tone on Toning | ✅ Yellow: --/blue/red step from light to strong; Green −4…+4 not yet confirmed |
 | 9 | + GR-Log on Vivid | ✅ GR-Log + LUT looks right; much cleaner shadows than Standard |
 | 10a | + bitrate 52.5 Mbit/s | ✅ clips record and play back (short clips tested) |
-| **11** | **+ GR-Log v2 curve** | ✅ **current build** · GR-Log + film LUT confirmed · field use: both Cinema looks in sun, backlight, shade and overcast; video clips up to ~1 min, no crashes |
+| **11** | **+ GR-Log v2 curve** | ✅ **current build** · GR-Log + film LUT confirmed · field use: both Cinema looks in sun, backlight, shade, overcast and portraits; video clips up to ~1 min, no crashes |
 
 Stages 6 (an ND attempt that didn't work) and 7 (superseded by 8) are left out. See [docs/TESTING.md](docs/TESTING.md)
 for the measurements.
+
+## Help test it
+
+More testing is very welcome, especially:
+* the Cinema (Green) −4…+4 Toning slider (does each step change the look?);
+* long video clips (10+ min), heat, and different SD cards;
+* a GR IIIx **HDF** (same firmware file, not yet flashed on one);
+* GR-Log in harder light, with your own LUTs.
+
+Open an issue with your camera, the stage hash and what you saw. Sample photos help.
 
 ## Building
 
